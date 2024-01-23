@@ -23,28 +23,11 @@ class EmployeeList extends StatefulWidget {
 }
 
 class _EmployeeListState extends State<EmployeeList> {
-  final List<Employee> employees = [
-    Employee(
-        name: "Munib Mogal",
-        designation: "Flutter Developer",
-        fromDate: DateFormat('dd MMM yyyy').format(DateTime.now()),
-        toDate: DateFormat('dd MMM yyyy').format(DateTime.now())),
-    Employee(
-        name: "Usmaan Mogal",
-        designation: "Product Designer",
-        fromDate: DateFormat('dd MMM yyyy').format(
-          DateTime.now(),
-        ),
-        toDate: null),
-    Employee(
-      name: "Muzzammil Mogal",
-      designation: "Product Manager",
-      fromDate: DateFormat('dd MMM yyyy').format(DateTime.now()),
-      toDate: DateFormat('dd MMM yyyy').format(
-        DateTime.now(),
-      ),
-    )
-  ];
+  @override
+  void initState() {
+    super.initState();
+    context.read<EmpBloc>().add(InitEmpEvent());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,93 +40,101 @@ class _EmployeeListState extends State<EmployeeList> {
       body: BlocBuilder<EmpBloc, EmpState>(
         buildWhen: (previous, current) => current is! EmpLoadingState,
         builder: (context, state) {
-          if (state.employeeList.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Image.asset('assets/images/no_employee.png'),
-                  const Text(
-                    "No Employee Records Found",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  )
-                ],
-              ),
+          if (state is EmpLoadingState) {
+            return const Center(
+              child: CircularProgressIndicator(),
             );
           } else {
-            return CustomScrollView(
-              slivers: [
-                if (state.employeeList.any((element) => element.toDate == null))
-                  const StickyHeader(title: "Current Employees"),
-                SliverList.list(
-                    children: state.employeeList
-                        .where((element) => element.toDate == null)
-                        .map(
-                          (e) => EmployeeTile(
-                            name: e.name!,
-                            designation: e.designation!,
-                            fromDate: e.fromDate!,
-                            toDate: e.toDate,
-                            dismissKey: UniqueKey(),
-                            onEdit: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => AddEditEmployee(
-                                    isEdit: true,
-                                    employee: e,
+            if (state.employeeList.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Image.asset('assets/images/no_employee.png'),
+                    const Text(
+                      "No Employee Records Found",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    )
+                  ],
+                ),
+              );
+            } else {
+              return CustomScrollView(
+                slivers: [
+                  if (state.employeeList
+                      .any((element) => element.toDate == null))
+                    const StickyHeader(title: "Current Employees"),
+                  SliverList.list(
+                      children: state.employeeList
+                          .where((element) => element.toDate == null)
+                          .map(
+                            (e) => EmployeeTile(
+                              name: e.name!,
+                              designation: e.designation!,
+                              fromDate: e.fromDate!,
+                              toDate: e.toDate,
+                              dismissKey: UniqueKey(),
+                              onEdit: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => AddEditEmployee(
+                                      isEdit: true,
+                                      employee: e,
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
-                            onDismissed: (direction) {
-                              context.read<EmpBloc>().add(RemoveEmpEvent(e));
-                              showSnackBar(context, "Employee Data Was Deleted",
-                                  () {
-                                context.read<EmpBloc>().add(AddEmpEvent(e));
-                              });
-                            },
-                          ),
-                        )
-                        .toList()),
-                if (state.employeeList.any((element) => element.toDate != null))
-                  const StickyHeader(title: "Previous Employes"),
-                SliverList.list(
-                    children: state.employeeList
-                        .where((element) => element.toDate != null)
-                        .map(
-                          (e) => EmployeeTile(
-                            name: e.name!,
-                            designation: e.designation!,
-                            fromDate: e.fromDate!,
-                            toDate: e.toDate,
-                            dismissKey: UniqueKey(),
-                            onEdit: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => AddEditEmployee(
-                                    isEdit: true,
-                                    employee: e,
+                                );
+                              },
+                              onDismissed: (direction) {
+                                context.read<EmpBloc>().add(RemoveEmpEvent(e));
+                                showSnackBar(
+                                    context, "Employee Data Was Deleted", () {
+                                  context.read<EmpBloc>().add(AddEmpEvent(e));
+                                });
+                              },
+                            ),
+                          )
+                          .toList()),
+                  if (state.employeeList
+                      .any((element) => element.toDate != null))
+                    const StickyHeader(title: "Previous Employes"),
+                  SliverList.list(
+                      children: state.employeeList
+                          .where((element) => element.toDate != null)
+                          .map(
+                            (e) => EmployeeTile(
+                              name: e.name!,
+                              designation: e.designation!,
+                              fromDate: e.fromDate!,
+                              toDate: e.toDate,
+                              dismissKey: UniqueKey(),
+                              onEdit: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => AddEditEmployee(
+                                      isEdit: true,
+                                      employee: e,
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
-                            onDismissed: (direction) {
-                              context.read<EmpBloc>().add(RemoveEmpEvent(e));
-                              showSnackBar(context, "Employee Data Was Deleted",
-                                  () {
-                                context.read<EmpBloc>().add(AddEmpEvent(e));
-                              });
-                            },
-                          ),
-                        )
-                        .toList()),
-                const EndFooter(
-                  title: "Swipe Left To Delete",
-                )
-              ],
-            );
+                                );
+                              },
+                              onDismissed: (direction) {
+                                context.read<EmpBloc>().add(RemoveEmpEvent(e));
+                                showSnackBar(
+                                    context, "Employee Data Was Deleted", () {
+                                  context.read<EmpBloc>().add(AddEmpEvent(e));
+                                });
+                              },
+                            ),
+                          )
+                          .toList()),
+                  const EndFooter(
+                    title: "Swipe Left To Delete",
+                  )
+                ],
+              );
+            }
           }
         },
       ),
