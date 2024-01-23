@@ -9,9 +9,17 @@ class EmpBloc extends Bloc<EmpEvent, EmpState> {
 
   final List<Employee> employeeList = [];
   EmpBloc({required this.localDataSource}) : super(const EmpState()) {
+    on<InitEmpEvent>(_initEmpEvent);
     on<AddEmpEvent>(_addEmpEvent);
     on<RemoveEmpEvent>(_removeEmpEvent);
     on<EditEmpEvent>(_editEmpEvent);
+  }
+
+  void _initEmpEvent(InitEmpEvent event, Emitter<EmpState> emit) async {
+    employeeList.clear();
+    emit(EmpLoadingState());
+    employeeList.addAll(await localDataSource.getEmployees());
+    emit(state.copyWith(employeeList: List.from(employeeList)));
   }
 
   void _addEmpEvent(AddEmpEvent event, Emitter<EmpState> emit) async {

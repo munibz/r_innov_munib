@@ -5,6 +5,13 @@ abstract class EmpEvent extends Equatable {
   const EmpEvent();
 }
 
+class InitEmpEvent extends EmpEvent{
+  @override
+  // TODO: implement props
+  List<Object?> get props => [];
+
+}
+
 class AddEmpEvent extends EmpEvent {
   final Employee employee;
 
